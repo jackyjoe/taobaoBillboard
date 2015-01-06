@@ -5,7 +5,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.Date;
 import java.util.Scanner;
 
 import net.sf.json.JSONArray;
@@ -28,6 +27,8 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
  * @version 1.0
  */
 public class Crawler {
+	private static Crawler instance = new Crawler();
+
 	private final WebClient webClient;
 
 	private String taobao_url;
@@ -56,16 +57,20 @@ public class Crawler {
 	}
 
 	@SuppressWarnings("deprecation")
-	public Crawler() {
+	private Crawler() {
 		webClient = new WebClient(BrowserVersion.INTERNET_EXPLORER_9);
 		webClient.getOptions().setJavaScriptEnabled(true);// 开启js解析
 		webClient.getOptions().setCssEnabled(false);// 开启css解析
 		webClient.getOptions().setThrowExceptionOnFailingStatusCode(false);
 		webClient.getOptions().setThrowExceptionOnScriptError(false);
-
 	}
 
-	// 设定爬取页面条件，关键词，价格区间，爬取数量
+	// 单例模式
+	public static Crawler getCrawlerInstance() {
+		return instance;
+	}
+
+	// 设定爬取页面条件，关键词，价格区间，爬取数量，默认排序为综合排序F
 	public void setConditions(String keyword, String start_price,
 			String end_price) {
 		try {
@@ -82,9 +87,17 @@ public class Crawler {
 		// System.out.println(url);
 	}
 
+	// 重载，设定爬取页面条件，关键词，价格区间，爬取数量，排序方式
+	public void setConditions(String keyword, String start_price,
+			String end_price, String sort) {
+		this.setConditions(keyword, start_price, end_price);
+		this.taobao_url = this.taobao_url + "sort=" + sort;
+	}
+
+	// 返回爬取结果json数据
 	public JSONArray crawlResult(int num) {
 		this.crawling(num);
-//		this.appendJSON();
+		// this.appendJSON();
 		return reslut_array;
 	}
 
@@ -158,15 +171,16 @@ public class Crawler {
 	private void appendJSON() {
 		for (int i = 0; i < reslut_array.size(); i++) {
 			JSONObject o = (JSONObject) reslut_array.get(i);
-			System.out.println("iddddddddd:"+o.getString(CrawlerConsts.PID));
+			System.out.println("iddddddddd:" + o.getString(CrawlerConsts.PID));
 
 			o.put(CrawlerConsts.PRODUCT_ENDS,
 					getEndsTime(o.getString(CrawlerConsts.PID)));
 		}
 	}
 
-	private long getEndsTime(String pid) {
-		long result = 0;
+	// 爬取某商品下架时间返回long
+	public long getEndsTime(String pid) {
+		long result = -1;
 		String url = "http://detail.tmall.com/item.htm?id=" + pid;
 		try {
 			HtmlPage htmlPage = webClient.getPage(url);
@@ -185,11 +199,6 @@ public class Crawler {
 		} catch (FailingHttpStatusCodeException | IOException e) {
 			e.printStackTrace();
 		}
-		return result;
-	}
-
-	public Date getEnds(String pid) {
-		Date result = new Date(getEndsTime(pid));
 		return result;
 	}
 

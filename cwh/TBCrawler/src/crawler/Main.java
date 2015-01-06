@@ -1,7 +1,5 @@
 package crawler;
 
-import net.sf.json.JSONArray;
-
 /**
  * Title: Main.java 
  * Description: 
@@ -13,21 +11,10 @@ import net.sf.json.JSONArray;
  */
 public class Main {
 	public static void main(String args[]) {
-		Crawler crawler = new Crawler();
-
-		crawler.setConditions("衣", "6666", 8888 + "");
-		JSONArray array = crawler.crawlResult(23);
-
-		// JSONArray array = crawler.test();
-
-		JsonToDataTool jsonToData = new JsonToDataTool();
-
-		ProductPO[] pros = jsonToData.jsonToProducts(array);
-		for (int i = 0; i < pros.length; i++) {
-			System.out.print(i + ": ");
-			pros[i].display();
-		}
-		// crawler.getEnds("40778766102");
-		// crawler.close();
+		TBDataAPIImpl testAPI = new TBDataAPIImpl();
+		// testAPI.getProductsSortByDefault("衣", "6666", "8888", 23);
+		// testAPI.getProductsSortByRenqi("衣", "6666", "8888", 23);
+		String str = "http://detail.tmall.com/item.htm?spm=a230r.1.14.15.Z5VqXY&id=42730493356&ad_id=&am_id=&cm_id=140105335569ed55e27b&pm_id=&abbucket=7";
+		System.out.println(testAPI.getProducEndsTimeByURL(str));
 	}
 }

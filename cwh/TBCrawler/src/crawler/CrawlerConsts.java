@@ -17,7 +17,7 @@ public interface CrawlerConsts {
 	final static String FIELD_START = "auctions";
 	// 字段内JSON数据结束标示
 	final static String FIELD_END = ",\"postFeeText\":";
-
+	// 以下为json数据段表示
 	// 商品评论数
 	final static String COMMENT_COUNT = "comment_count";
 	// 商品标题
@@ -32,5 +32,8 @@ public interface CrawlerConsts {
 	final static String PRODUCT_ENDS = "ends";
 	// 包含商品下架时间所在标签
 	final static String PRODUCT_ENDS_TAG = "J_listBuyerOnView";
+
+	// 搜索排序关键字人气排序
+	final static String RENQI_DESC = "renqi-desc";
 
 }
