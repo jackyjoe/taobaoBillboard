@@ -83,4 +83,19 @@ public class TBDataAPIImpl implements TBDataAPI {
 		}
 	}
 
+	@Override
+	public Date getProductSalesnum(String pid) {
+		return null;
+	}
+
+	// <strong id="J_StrPrice" ><em class="tb-rmb">&yen;</em><em
+	// class="tb-rmb-num">29.80 - 32.80</em></strong>
+	// defaultItemPrice
+	
+	//http://hdc1.alicdn.com/asyn.htm?从中找出改该代码
+	@Override
+	public double getProductPrice(String pid) {
+		return 0;
+	}
+
 }

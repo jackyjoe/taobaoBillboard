@@ -30,4 +30,9 @@ public interface TBDataAPI {
 	// 根据链接返回下架时间（默认网址无错误可以进入，-2表示链接不包含商品id，-1不存在该商品）
 	public long getProducEndsTimeByURL(String url);
 
+	// 根据商品pid爬取某商品销量返回
+	public Date getProductSalesnum(String pid);
+
+	// 根据商品pid爬取某商品价格返回
+	public double getProductPrice(String pid);
 }
