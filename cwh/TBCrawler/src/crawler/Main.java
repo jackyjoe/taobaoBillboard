@@ -14,7 +14,8 @@ public class Main {
 		TBDataAPIImpl testAPI = new TBDataAPIImpl();
 		// testAPI.getProductsSortByDefault("衣", "6666", "8888", 23);
 		// testAPI.getProductsSortByRenqi("衣", "6666", "8888", 23);
-		String str = "http://detail.tmall.com/item.htm?spm=a230r.1.14.15.Z5VqXY&id=42730493356&ad_id=&am_id=&cm_id=140105335569ed55e27b&pm_id=&abbucket=7";
-		System.out.println(testAPI.getProducEndsTimeByURL(str));
+		// String str =
+		// "http://detail.tmall.com/item.htm?spm=a230r.1.14.15.Z5VqXY&id=42730493356&ad_id=&am_id=&cm_id=140105335569ed55e27b&pm_id=&abbucket=7";
+		// System.out.println(testAPI.getProducEndsTimeByURL(str));
 	}
 }

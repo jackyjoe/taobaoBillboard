@@ -1,9 +1,14 @@
 package crawler;
 
+import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.Scanner;
 
@@ -63,6 +68,7 @@ public class Crawler {
 		webClient.getOptions().setCssEnabled(false);// 开启css解析
 		webClient.getOptions().setThrowExceptionOnFailingStatusCode(false);
 		webClient.getOptions().setThrowExceptionOnScriptError(false);
+		getRealPrice("15682978288");
 	}
 
 	// 单例模式
@@ -133,7 +139,6 @@ public class Crawler {
 			// 获取取 script标签字段，寻找含有所需json数据
 			DomNodeList<DomElement> list = htmlPage
 					.getElementsByTagName("script");
-			field = list.get(5).asXml();
 			for (DomElement ele : list) {
 				if (ele.asXml().contains(CrawlerConsts.G_PAGE_CONFIG)) {
 					field = ele.asXml();
@@ -178,6 +183,10 @@ public class Crawler {
 		}
 	}
 
+	/*
+	 * 以上为配合使用，crawlResult为对外接口，以下为其他独立细小功能
+	 */
+
 	// 爬取某商品下架时间返回long
 	public long getEndsTime(String pid) {
 		long result = -1;
@@ -200,6 +209,55 @@ public class Crawler {
 			e.printStackTrace();
 		}
 		return result;
+	}
+
+	// 爬取某商品价格返回double
+	public double getRealPrice(String pid) {
+		String field = null;
+		String url = "http://detail.tmall.com/item.htm?id=" + pid;
+		try {
+			HtmlPage htmlPage = webClient.getPage(url);
+			DomNodeList<DomElement> list = htmlPage
+					.getElementsByTagName("script");
+			for (DomElement ele : list) {
+				if (ele.asXml().contains("TShop.poc")) {
+					field = ele.asXml();
+					break;
+				}
+			}
+		} catch (FailingHttpStatusCodeException | IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		if (null != field) {
+			int pos = field.indexOf("http://hdc1.alicdn.com/asyn.htm?");
+			String result = field.substring(pos);
+			pos = result.indexOf("\"");
+			result = result.substring(0, pos);
+			catchProViewInfo(result, pid);
+			return -1;
+		} else {
+			return -1;
+		}
+	}
+
+	// http://hdc1.alicdn.com/asyn.htm?pageId=488153561&userId=675281321
+	// <p class=\"desc\"><a atpanel
+	private void catchProViewInfo(String url, String pid) {
+		try {
+			System.out.println(url);
+
+			HtmlPage htmlPage = webClient.getPage(url);
+			String str = htmlPage.asXml();
+			// int pos = str.indexOf("{");
+			// str = str.substring(pos);
+			System.out.println(str);
+		} catch (FailingHttpStatusCodeException | IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 	}
 
 	public void close() {
