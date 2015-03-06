@@ -1,14 +1,9 @@
 package crawler;
 
-import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.Scanner;
 
@@ -68,7 +63,7 @@ public class Crawler {
 		webClient.getOptions().setCssEnabled(false);// 开启css解析
 		webClient.getOptions().setThrowExceptionOnFailingStatusCode(false);
 		webClient.getOptions().setThrowExceptionOnScriptError(false);
-		getRealPrice("15682978288");
+		// getRealPrice("15682978288");
 	}
 
 	// 单例模式
@@ -78,7 +73,7 @@ public class Crawler {
 
 	// 设定爬取页面条件，关键词，价格区间，爬取数量，默认排序为综合排序F
 	public void setConditions(String keyword, String start_price,
-			String end_price) {
+			String end_price, String sort) {
 		try {
 			this.keyword = URLEncoder.encode(keyword, "utf-8");
 		} catch (UnsupportedEncodingException e) {
@@ -86,18 +81,10 @@ public class Crawler {
 		}
 		this.start_price = start_price;
 		this.end_price = end_price;
-		this.taobao_url = "http://s.taobao.com/search?tab=all&q="
-				+ this.keyword
-				+ "&stats_click=search_radio_all%253A1&filter=reserve_price%5B"
-				+ this.start_price + "%2C" + this.end_price + "%5D";
-		// System.out.println(url);
-	}
-
-	// 重载，设定爬取页面条件，关键词，价格区间，爬取数量，排序方式
-	public void setConditions(String keyword, String start_price,
-			String end_price, String sort) {
-		this.setConditions(keyword, start_price, end_price);
-		this.taobao_url = this.taobao_url + "sort=" + sort;
+		this.taobao_url = "http://s.taobao.com/search?filter=reserve_price%5B"
+				+ this.start_price + "%2C" + this.end_price + "%5D&tab=all&q="
+				+ this.keyword + "&stats_click=search_radio_all%253A1&sort="
+				+ sort;
 	}
 
 	// 返回爬取结果json数据
@@ -116,7 +103,11 @@ public class Crawler {
 
 		if (null != taobao_url) {
 			do {
-				temp = convertToJSONs(getField(taobao_url + "s=" + s));
+				if (s == 0) {
+					temp = convertToJSONs(getField(taobao_url));
+				} else {
+					temp = convertToJSONs(getField(taobao_url + "s=" + s));
+				}
 				s += 44;// 淘宝翻页标签以s=44*i 形式翻页
 
 				if (count >= temp.size()) {
@@ -136,6 +127,7 @@ public class Crawler {
 		String field = null;
 		try {
 			HtmlPage htmlPage = webClient.getPage(url);
+
 			// 获取取 script标签字段，寻找含有所需json数据
 			DomNodeList<DomElement> list = htmlPage
 					.getElementsByTagName("script");
@@ -149,13 +141,15 @@ public class Crawler {
 		} catch (FailingHttpStatusCodeException | IOException e) {
 			e.printStackTrace();
 		}
+		// System.out.println(field);
+		System.out.println(url);
+
 		return field;
 	}
 
 	// 取出script字段内的json数据，返回json数组
 	private JSONArray convertToJSONs(String field) {
 		JSONArray array = null;
-
 		if (null != field) {
 			// 获取所需json的位置
 			int index_start = field.indexOf(CrawlerConsts.FIELD_START);
@@ -180,6 +174,49 @@ public class Crawler {
 
 			o.put(CrawlerConsts.PRODUCT_ENDS,
 					getEndsTime(o.getString(CrawlerConsts.PID)));
+		}
+	}
+
+	public int crawlPidRank(String id, int num) {
+
+		reslut_array.clear();
+		int count = num;
+		int rank = 0;
+		int s = 0;
+		JSONObject temp = null;
+		JSONArray arr = null;
+
+		if (null != taobao_url) {
+			do {
+				if (s == 0) {
+					arr = convertToJSONs(getField(taobao_url));
+				} else {
+					arr = convertToJSONs(getField(taobao_url + "s=" + s));
+				}
+				s += 44;// 淘宝翻页标签以s=44*i 形式翻页
+
+				for (int i = 0; i < arr.size(); i++) {
+					temp = (JSONObject) arr.get(i);
+					// System.out.println(temp.getString(CrawlerConsts.PID));
+					if (temp.getString(CrawlerConsts.PID).equals(id)) {
+						count = -1;
+						break;
+					}
+					rank++;
+				}
+				if (count >= arr.size()) {
+					count -= arr.size();
+				} else {
+					count = 0;
+				}
+			} while (count != 0 && arr != null && arr.size() != 0);
+
+		}
+		if (rank < num) {
+			return rank;
+		} else {
+			return -1;
+
 		}
 	}
 

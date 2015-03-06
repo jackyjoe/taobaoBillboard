@@ -30,7 +30,8 @@ public class TBDataAPIImpl implements TBDataAPI {
 	@Override
 	public ProductPO[] getProductsSortByDefault(String keyword,
 			String start_price, String end_price, int num) {
-		crawler.setConditions(keyword, start_price, end_price);
+		crawler.setConditions(keyword, start_price, end_price,
+				CrawlerConsts.DEFAULT_ORDER);
 		JSONArray array = crawler.crawlResult(num);
 		ProductPO[] pros = jsonToData.jsonToProducts(array);
 
@@ -57,7 +58,25 @@ public class TBDataAPIImpl implements TBDataAPI {
 		return pros;
 	}
 
-	// 按照关键字，起始价格，结束价格，搜索数量，按人气排名返回数据。
+	// 按照要搜索商品id，关键字，起始价格，结束价格，搜索数量，按综合排名返回商品处于前num中第几名
+	@Override
+	public int getRankByDefault(String id, String keyword, String start_price,
+			String end_price, int num) {
+		crawler.setConditions(keyword, start_price, end_price,
+				CrawlerConsts.DEFAULT_ORDER);
+		return crawler.crawlPidRank(id, num);
+	}
+
+	// 按照要搜索商品id，关键字，起始价格，结束价格，搜索数量，按人气排名返回商品处于前num中第几名
+	@Override
+	public int getRankByRenqi(String id, String keyword, String start_price,
+			String end_price, int num) {
+		crawler.setConditions(keyword, start_price, end_price,
+				CrawlerConsts.RENQI_DESC);
+		return crawler.crawlPidRank(id, num);
+	}
+
+	// 根据商品pid爬取某商品下架时间返回long
 	@Override
 	public long getProducEndsTime(String pid) {
 		crawler.getEndsTime(pid);
@@ -91,8 +110,8 @@ public class TBDataAPIImpl implements TBDataAPI {
 	// <strong id="J_StrPrice" ><em class="tb-rmb">&yen;</em><em
 	// class="tb-rmb-num">29.80 - 32.80</em></strong>
 	// defaultItemPrice
-	
-	//http://hdc1.alicdn.com/asyn.htm?从中找出改该代码
+
+	// http://hdc1.alicdn.com/asyn.htm?从中找出改该代码
 	@Override
 	public double getProductPrice(String pid) {
 		return 0;

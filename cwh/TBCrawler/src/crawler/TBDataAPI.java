@@ -21,6 +21,16 @@ public interface TBDataAPI {
 	public ProductPO[] getProductsSortByRenqi(String keyword,
 			String start_price, String end_price, int num);
 
+	// 按照要搜索商品id，关键字，起始价格，结束价格，搜索数量，按综合排名返回商品处于前num中第几名
+	public int getRankByDefault(String id, String keyword, String start_price,
+			String end_price, int num);
+
+	// 按照要搜索商品id，关键字，起始价格，结束价格，搜索数量，按人气排名返回商品处于前num中第几名
+	public int getRankByRenqi(String id, String keyword, String start_price,
+			String end_price, int num);
+
+	// 搜索 商品 根据pid 获得商品 标题 销量
+
 	// 根据商品pid爬取某商品下架时间返回long
 	public long getProducEndsTime(String pid);
 

@@ -36,4 +36,6 @@ public interface CrawlerConsts {
 	// 搜索排序关键字人气排序
 	final static String RENQI_DESC = "renqi-desc";
 
+	final static String DEFAULT_ORDER = "default";
+
 }
