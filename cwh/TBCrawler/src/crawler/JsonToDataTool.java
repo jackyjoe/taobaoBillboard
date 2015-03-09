@@ -19,7 +19,7 @@ public class JsonToDataTool {
 
 	public ProductPO jsonToProduct(JSONObject o) {
 		ProductPO pro = new ProductPO(o.getString(CrawlerConsts.PID),
-				o.getString(CrawlerConsts.TITLE),
+				o.getString(CrawlerConsts.RAW_TITLE),
 				o.getString(CrawlerConsts.VIEW_PRICE),
 				o.getString(CrawlerConsts.SALESNUM),
 				o.getString(CrawlerConsts.COMMENT_COUNT));
@@ -38,7 +38,7 @@ public class JsonToDataTool {
 
 	public ProductPO jsonToDetailedProduct(JSONObject o) {
 		ProductPO pro = new ProductPO(o.getString(CrawlerConsts.PID),
-				o.getString(CrawlerConsts.TITLE),
+				o.getString(CrawlerConsts.RAW_TITLE),
 				o.getString(CrawlerConsts.VIEW_PRICE),
 				o.getString(CrawlerConsts.SALESNUM),
 				o.getString(CrawlerConsts.COMMENT_COUNT),

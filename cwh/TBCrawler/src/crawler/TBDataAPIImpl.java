@@ -35,10 +35,11 @@ public class TBDataAPIImpl implements TBDataAPI {
 		JSONArray array = crawler.crawlResult(num);
 		ProductPO[] pros = jsonToData.jsonToProducts(array);
 
-		for (int i = 0; i < pros.length; i++) {
-			System.out.print(i + ": ");
-			pros[i].display();
-		}
+		// for (int i = 0; i < pros.length; i++) {
+		// System.out.print(i + ": ");
+		// pros[i].display();
+		// }
+
 		return pros;
 	}
 
@@ -51,10 +52,11 @@ public class TBDataAPIImpl implements TBDataAPI {
 		JSONArray array = crawler.crawlResult(num);
 		ProductPO[] pros = jsonToData.jsonToProducts(array);
 
-		for (int i = 0; i < pros.length; i++) {
-			System.out.print(i + ": ");
-			pros[i].display();
-		}
+		// for (int i = 0; i < pros.length; i++) {
+		// System.out.print(i + ": ");
+		// pros[i].display();
+		// }
+
 		return pros;
 	}
 
@@ -76,11 +78,38 @@ public class TBDataAPIImpl implements TBDataAPI {
 		return crawler.crawlPidRank(id, num);
 	}
 
+	// 爬取商品，返回数组{标题(String)，价格(double)，销量(int)}
+	public Object[] getPoductInfo(String pid) {
+		return crawler.getPoductInfo(pid);
+	}
+
+	// 根据pid 获得商品标题
+	public String getTitle(String pid) {
+		return crawler.getTitle(pid, true);
+	}
+
+	// 根据商品pid爬取某商品价格返回
+	@Override
+	public double getProductPrice(String pid) {
+		return crawler.getPrice(pid, true);
+	}
+
+	// <strong id="J_StrPrice" ><em class="tb-rmb">&yen;</em><em
+	// class="tb-rmb-num">29.80 - 32.80</em></strong>
+	// defaultItemPrice
+
+	// http://hdc1.alicdn.com/asyn.htm?从中找出改该代码
+
+	// 根据商品pid爬取某商品销量返回
+	@Override
+	public int getProductSalesnum(String pid) {
+		return crawler.getPoductSalesNum(pid);
+	}
+
 	// 根据商品pid爬取某商品下架时间返回long
 	@Override
 	public long getProducEndsTime(String pid) {
-		crawler.getEndsTime(pid);
-		return 0;
+		return crawler.getEndsTime(pid, true);
 	}
 
 	// 根据商品pid爬取某商品下架时间返回util.Date
@@ -96,25 +125,10 @@ public class TBDataAPIImpl implements TBDataAPI {
 			int pos = url.indexOf("&id=") + "&id=".length();
 			String pid = url.substring(pos);
 			pid = (pid.split("&"))[0];
-			return crawler.getEndsTime(pid);
+			return crawler.getEndsTime(pid, true);
 		} else {
 			return -2;
 		}
-	}
-
-	@Override
-	public Date getProductSalesnum(String pid) {
-		return null;
-	}
-
-	// <strong id="J_StrPrice" ><em class="tb-rmb">&yen;</em><em
-	// class="tb-rmb-num">29.80 - 32.80</em></strong>
-	// defaultItemPrice
-
-	// http://hdc1.alicdn.com/asyn.htm?从中找出改该代码
-	@Override
-	public double getProductPrice(String pid) {
-		return 0;
 	}
 
 }

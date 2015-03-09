@@ -30,7 +30,7 @@ public class Crawler {
 	private static Crawler instance = new Crawler();
 
 	private final WebClient webClient;
-
+	private HtmlPage htmlPage = null;
 	private String taobao_url;
 	private String start_price;
 	private String end_price;
@@ -142,7 +142,7 @@ public class Crawler {
 			e.printStackTrace();
 		}
 		// System.out.println(field);
-		System.out.println(url);
+		// System.out.println(url);
 
 		return field;
 	}
@@ -170,13 +170,19 @@ public class Crawler {
 	private void appendJSON() {
 		for (int i = 0; i < reslut_array.size(); i++) {
 			JSONObject o = (JSONObject) reslut_array.get(i);
-			System.out.println("iddddddddd:" + o.getString(CrawlerConsts.PID));
+			// System.out.println("iddddddddd:" +
+			// o.getString(CrawlerConsts.PID));
 
 			o.put(CrawlerConsts.PRODUCT_ENDS,
-					getEndsTime(o.getString(CrawlerConsts.PID)));
+					getEndsTime(o.getString(CrawlerConsts.PID), true));
 		}
 	}
 
+	/*
+	 * 以上为配合使用，crawlResult为对外接口，以下为其他独立细小功能
+	 */
+
+	// 按排名返回商品处于前num中第几名
 	public int crawlPidRank(String id, int num) {
 
 		reslut_array.clear();
@@ -220,81 +226,151 @@ public class Crawler {
 		}
 	}
 
-	/*
-	 * 以上为配合使用，crawlResult为对外接口，以下为其他独立细小功能
-	 */
-
-	// 爬取某商品下架时间返回long
-	public long getEndsTime(String pid) {
-		long result = -1;
+	// 获取某商品页面
+	private HtmlPage getPage(String pid) {
 		String url = "http://detail.tmall.com/item.htm?id=" + pid;
+		this.htmlPage = null;
 		try {
-			HtmlPage htmlPage = webClient.getPage(url);
-			// 包含上下架时间的标签
-			DomElement ele = htmlPage
-					.getElementById(CrawlerConsts.PRODUCT_ENDS_TAG);
-			if (null != ele) {
-				String str = ele.asXml();
-				str = str.substring(str.indexOf(CrawlerConsts.PRODUCT_ENDS));
-				str = str.substring(
-						(CrawlerConsts.PRODUCT_ENDS + "=").length(),
-						str.indexOf("&"));
-				result = Long.parseLong(str);
-			}
-
+			htmlPage = webClient.getPage(url);
 		} catch (FailingHttpStatusCodeException | IOException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		return htmlPage;
+	}
+
+	// 爬取某商品标题
+	public String getTitle(String pid, boolean flag) {
+		if (flag) {
+			this.getPage(pid);
+		}
+		String title = null;
+
+		// 包含上下架时间的标签
+		DomNodeList<DomElement> list = htmlPage
+				.getElementsByTagName(CrawlerConsts.TITLE);
+		if (list.size() > 0) {
+			title = list.get(0).asText();
+		}
+		return title;
+	}
+
+	// 爬取某商品价格
+	public double getPrice(String pid, boolean flag) {
+		if (flag) {
+			this.getPage(pid);
+		}
+		double result = -1;
+
+		DomElement ele = htmlPage.getElementById(CrawlerConsts.J_STRPRICE);
+		if (null != ele) {
+			DomElement temp = ele.getLastElementChild();
+			if (null != temp) {
+				result = Double.parseDouble(temp.asText());
+			}
+		}
+		return result;
+
+	}
+
+	// 爬取某商品下架时间返回long
+	public long getEndsTime(String pid, boolean flag) {
+		if (flag) {
+			this.getPage(pid);
+		}
+
+		long result = -1;
+		// 包含上下架时间的标签
+		DomElement ele = htmlPage
+				.getElementById(CrawlerConsts.PRODUCT_ENDS_TAG);
+		if (null != ele) {
+			String str = ele.asXml();
+			str = str.substring(str.indexOf(CrawlerConsts.PRODUCT_ENDS));
+			str = str.substring((CrawlerConsts.PRODUCT_ENDS + "=").length(),
+					str.indexOf("&"));
+			result = Long.parseLong(str);
+		}
+
 		return result;
 	}
 
-	// 爬取某商品价格返回double
-	public double getRealPrice(String pid) {
+	// 爬取商品，返回数组{标题(String)，价格(double)，销量(int)}
+
+	public Object[] getPoductInfo(String pid) {
+		int salesnum = this.getPoductSalesNum(pid);
+		String title = this.getTitle(pid, false);
+		double price = this.getPrice(pid, false);
+		Object[] arr = { title, price, salesnum };
+		return arr;
+	}
+
+	public int getPoductSalesNum(String pid) {
 		String field = null;
-		String url = "http://detail.tmall.com/item.htm?id=" + pid;
-		try {
-			HtmlPage htmlPage = webClient.getPage(url);
-			DomNodeList<DomElement> list = htmlPage
-					.getElementsByTagName("script");
-			for (DomElement ele : list) {
-				if (ele.asXml().contains("TShop.poc")) {
-					field = ele.asXml();
-					break;
-				}
+		int salesnum = -1;
+		if (null != pid) {
+			String temp = getDetailedField(pid);
+			temp = HttpRequest.sendPost(temp.split("\\?")[0],
+					temp.split("\\?")[1]);
+			temp = temp.substring(temp.indexOf("{"));
+
+			JSONObject jsonObject = JSONObject.fromObject(temp);
+			// System.out.println(jsonObject);
+
+			field = jsonObject.getString(CrawlerConsts.LEFT);
+			field = field.substring(field.indexOf(pid));
+			// System.out.println(result);
+
+			/*
+			 * field = field.substring(field.indexOf("title=\"") +
+			 * "title=\"".length()); String title = field.substring(0,
+			 * field.indexOf("\"")); System.out.println(title);
+			 */
+
+			// String a;
+			// try {
+			// a = URLEncoder.encode(title, "GBK");
+			// System.out.println(a);
+			// } catch (UnsupportedEncodingException e) {
+			// // TODO Auto-generated catch block
+			// e.printStackTrace();
+			// }
+
+			temp = field.substring(
+					field.indexOf("<strong>") + "<strong>".length(),
+					field.indexOf("</strong>"));
+			salesnum = Integer.parseInt(temp);
+			// System.out.println(salesnum);
+
+		}
+
+		return salesnum;
+	}
+
+	private String getDetailedField(String pid) {
+		this.getPage(pid);
+		String field = null;
+
+		// 获取取 script标签字段，寻找含有所需json数据
+		DomNodeList<DomElement> list = htmlPage.getElementsByTagName("script");
+		for (DomElement ele : list) {
+			if (ele.asXml().contains(CrawlerConsts.TSHOP)
+					|| ele.asXml().contains(CrawlerConsts.HUB)) {
+				field = ele.asXml();
+				break;
 			}
-		} catch (FailingHttpStatusCodeException | IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 
 		if (null != field) {
-			int pos = field.indexOf("http://hdc1.alicdn.com/asyn.htm?");
-			String result = field.substring(pos);
-			pos = result.indexOf("\"");
-			result = result.substring(0, pos);
-			catchProViewInfo(result, pid);
-			return -1;
-		} else {
-			return -1;
-		}
-	}
+			// 获取数据url的位置
+			int index_start = field.indexOf("'http://hdc1.alicdn.com");
+			if (-1 != index_start) {
+				field = field.substring(index_start + 1);
+				field = field.substring(0, field.indexOf("'"));
+			}
 
-	// http://hdc1.alicdn.com/asyn.htm?pageId=488153561&userId=675281321
-	// <p class=\"desc\"><a atpanel
-	private void catchProViewInfo(String url, String pid) {
-		try {
-			System.out.println(url);
-
-			HtmlPage htmlPage = webClient.getPage(url);
-			String str = htmlPage.asXml();
-			// int pos = str.indexOf("{");
-			// str = str.substring(pos);
-			System.out.println(str);
-		} catch (FailingHttpStatusCodeException | IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 
+		return field;
 	}
 
 	public void close() {

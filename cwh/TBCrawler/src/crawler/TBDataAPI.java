@@ -29,7 +29,17 @@ public interface TBDataAPI {
 	public int getRankByRenqi(String id, String keyword, String start_price,
 			String end_price, int num);
 
-	// 搜索 商品 根据pid 获得商品 标题 销量
+	// 爬取商品，返回数组{标题(String)，价格(double)，销量(int)}
+	public Object[] getPoductInfo(String pid);
+
+	// 根据pid 获得商品标题
+	public String getTitle(String id);
+
+	// 根据商品pid爬取某商品价格返回
+	public double getProductPrice(String pid);
+
+	// 根据商品pid爬取某商品销量返回
+	public int getProductSalesnum(String pid);
 
 	// 根据商品pid爬取某商品下架时间返回long
 	public long getProducEndsTime(String pid);
@@ -40,9 +50,4 @@ public interface TBDataAPI {
 	// 根据链接返回下架时间（默认网址无错误可以进入，-2表示链接不包含商品id，-1不存在该商品）
 	public long getProducEndsTimeByURL(String url);
 
-	// 根据商品pid爬取某商品销量返回
-	public Date getProductSalesnum(String pid);
-
-	// 根据商品pid爬取某商品价格返回
-	public double getProductPrice(String pid);
 }

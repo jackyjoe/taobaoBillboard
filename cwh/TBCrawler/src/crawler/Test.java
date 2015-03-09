@@ -4,8 +4,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -63,11 +65,31 @@ public class Test {
 			temp = temp.substring(temp.indexOf("{"));
 
 			JSONObject jsonObject = JSONObject.fromObject(temp);
-			System.out.println(jsonObject);
+//			System.out.println(jsonObject);
 
 			result = jsonObject.getString("left");
-			int index = result.indexOf(pid);
-			System.out.println(result.substring(index));
+			result = result.substring(result.indexOf(pid));
+//			System.out.println(result);
+			
+			result = result.substring(result.indexOf("title=\"")+"title=\"".length());	
+			String title= result.substring(0,result.indexOf("\""));
+			System.out.println(title);
+			
+		
+
+//			String a;
+//			try {
+//				a = URLEncoder.encode(title, "GBK");
+//				System.out.println(a);
+//			} catch (UnsupportedEncodingException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+
+			temp = result.substring(result.indexOf("<strong>")+"<strong>".length(),result.indexOf("</strong>"));
+			int salesnum =Integer.parseInt(temp);
+			System.out.println(salesnum);
+			
 
 		}
 
